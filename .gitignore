@@ -1,0 +1,45 @@
+# Binaries
+memora
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, build with `go test -c`
+*.test
+
+# Output of `go tool cover`
+*.out
+
+# Dependency directories
+vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Build output
+dist/
+bin/
+
+# Environment / secrets
+.env
+.env.*
+*.local
+
+# Config with secrets (keep example configs)
+~/.config/memora/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testcontainers / test artifacts
+/tmp/
