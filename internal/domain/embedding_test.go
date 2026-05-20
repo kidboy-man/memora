@@ -1,10 +1,11 @@
 package domain_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/kidboy-man/memora/internal/domain"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestEmbeddingProfileValidate(t *testing.T) {
@@ -147,23 +148,15 @@ func TestEmbeddingProfileValidate(t *testing.T) {
 
 			err := p.Validate()
 
-			if tt.wantErr && err == nil {
-				t.Fatal("expected error, got nil")
-			}
-			if !tt.wantErr && err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
 			if tt.wantErr {
+				require.Error(t, err)
 				var ve *domain.ValidationError
-				if !errors.As(err, &ve) {
-					t.Fatalf("expected *ValidationError, got %T: %v", err, err)
-				}
-				msg := err.Error()
+				require.ErrorAs(t, err, &ve)
 				for _, sub := range tt.errContains {
-					if !containsSubstring(msg, sub) {
-						t.Errorf("error %q missing %q", msg, sub)
-					}
+					assert.Contains(t, err.Error(), sub)
 				}
+			} else {
+				require.NoError(t, err)
 			}
 		})
 	}

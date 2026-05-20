@@ -1,10 +1,11 @@
 package domain_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/kidboy-man/memora/internal/domain"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMemoryValidate(t *testing.T) {
@@ -22,7 +23,7 @@ func TestMemoryValidate(t *testing.T) {
 		name        string
 		mutate      func(*domain.Memory)
 		wantErr     bool
-		errContains []string // all substrings must appear in error message
+		errContains []string
 	}{
 		{
 			name:    "valid global fact",
@@ -156,37 +157,16 @@ func TestMemoryValidate(t *testing.T) {
 
 			err := m.Validate()
 
-			if tt.wantErr && err == nil {
-				t.Fatal("expected error, got nil")
-			}
-			if !tt.wantErr && err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
 			if tt.wantErr {
+				require.Error(t, err)
 				var ve *domain.ValidationError
-				if !errors.As(err, &ve) {
-					t.Fatalf("expected *ValidationError, got %T: %v", err, err)
-				}
-				msg := err.Error()
+				require.ErrorAs(t, err, &ve)
 				for _, sub := range tt.errContains {
-					if !containsSubstring(msg, sub) {
-						t.Errorf("error %q missing %q", msg, sub)
-					}
+					assert.Contains(t, err.Error(), sub)
 				}
+			} else {
+				require.NoError(t, err)
 			}
 		})
 	}
-}
-
-func containsSubstring(s, sub string) bool {
-	return len(s) >= len(sub) && (s == sub || len(s) > 0 && containsAt(s, sub))
-}
-
-func containsAt(s, sub string) bool {
-	for i := 0; i <= len(s)-len(sub); i++ {
-		if s[i:i+len(sub)] == sub {
-			return true
-		}
-	}
-	return false
 }

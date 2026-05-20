@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/kidboy-man/memora/internal/domain"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestErrorMessages(t *testing.T) {
@@ -68,10 +70,7 @@ func TestErrorMessages(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			msg := tt.err.Error()
-			if !containsSubstring(msg, tt.contain) {
-				t.Errorf("error message %q does not contain %q", msg, tt.contain)
-			}
+			assert.Contains(t, tt.err.Error(), tt.contain)
 		})
 	}
 }
@@ -80,24 +79,18 @@ func TestErrorsAs(t *testing.T) {
 	t.Run("ValidationError unwrappable", func(t *testing.T) {
 		err := fmt.Errorf("wrap: %w", &domain.ValidationError{Fields: []string{"x"}})
 		var ve *domain.ValidationError
-		if !errors.As(err, &ve) {
-			t.Error("errors.As should find ValidationError through wrapping")
-		}
+		require.ErrorAs(t, err, &ve)
 	})
 
 	t.Run("EmbeddingFailedError unwraps cause", func(t *testing.T) {
 		cause := fmt.Errorf("provider down")
 		err := &domain.EmbeddingFailedError{Cause: cause}
-		if !errors.Is(err, cause) {
-			t.Error("errors.Is should find cause through EmbeddingFailedError.Unwrap()")
-		}
+		assert.ErrorIs(t, err, cause)
 	})
 
 	t.Run("NotFoundError distinct from ValidationError", func(t *testing.T) {
 		err := &domain.NotFoundError{Resource: "memory", ID: "x"}
 		var ve *domain.ValidationError
-		if errors.As(err, &ve) {
-			t.Error("NotFoundError should not match ValidationError")
-		}
+		assert.False(t, errors.As(err, &ve))
 	})
 }
